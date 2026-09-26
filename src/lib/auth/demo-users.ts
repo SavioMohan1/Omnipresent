@@ -1,0 +1,81 @@
+import { UserDocument } from '@/lib/types/models';
+
+export const DEMO_PASSWORD_DEFAULT = 'OnboardFlow2026!';
+// Pre-hashed for fast startup: bcrypt.hashSync('OnboardFlow2026!', 10)
+const DEMO_PASSWORD_HASH = '$2b$10$r7cAnJpg1bGgn7Xwoqw6E.vO.bDlNjCZkWr.S39XJylTNS6CMWtra';
+
+export const DEMO_USERS: UserDocument[] = [
+  {
+    id: 'user-hr',
+    email: 'hr@onboardflow.demo',
+    name: 'Helen Reed',
+    role: 'HR',
+    department: 'People Operations',
+    jobTitle: 'Head of People & Culture',
+    passwordHash: DEMO_PASSWORD_HASH,
+    createdAt: '2026-09-01T00:00:00.000Z',
+  },
+  {
+    id: 'user-aarav-sharma',
+    email: 'aarav@onboardflow.demo',
+    name: 'Aarav Sharma',
+    role: 'EMPLOYEE',
+    department: 'Engineering',
+    jobTitle: 'Backend Engineer',
+    employeeProfileId: 'emp-aarav-sharma',
+    passwordHash: DEMO_PASSWORD_HASH,
+    createdAt: '2026-09-01T00:00:00.000Z',
+  },
+  {
+    id: 'user-priya-nair',
+    email: 'priya@onboardflow.demo',
+    name: 'Priya Nair',
+    role: 'MANAGER',
+    department: 'Engineering',
+    jobTitle: 'Engineering Manager',
+    managerEmployeeIds: ['emp-aarav-sharma'],
+    passwordHash: DEMO_PASSWORD_HASH,
+    createdAt: '2026-09-01T00:00:00.000Z',
+  },
+  {
+    id: 'user-security',
+    email: 'security@onboardflow.demo',
+    name: 'Sam Vance',
+    role: 'SECURITY',
+    department: 'Physical & InfoSec',
+    jobTitle: 'Security Lead',
+    passwordHash: DEMO_PASSWORD_HASH,
+    createdAt: '2026-09-01T00:00:00.000Z',
+  },
+  {
+    id: 'user-it',
+    email: 'it@onboardflow.demo',
+    name: 'Ian Torres',
+    role: 'IT',
+    department: 'IT Operations',
+    jobTitle: 'IT Systems Admin',
+    passwordHash: DEMO_PASSWORD_HASH,
+    createdAt: '2026-09-01T00:00:00.000Z',
+  },
+  {
+    id: 'user-cafeteria',
+    email: 'cafeteria@onboardflow.demo',
+    name: 'Carlos Mendez',
+    role: 'CAFETERIA',
+    department: 'Workplace Services',
+    jobTitle: 'Cafeteria & Facilities Lead',
+    passwordHash: DEMO_PASSWORD_HASH,
+    createdAt: '2026-09-01T00:00:00.000Z',
+  },
+  {
+    id: 'user-meera-shah',
+    email: 'meera@onboardflow.demo',
+    name: 'Meera Shah',
+    role: 'EMPLOYEE',
+    department: 'Sales',
+    jobTitle: 'Sales Executive',
+    employeeProfileId: 'emp-meera-shah',
+    passwordHash: DEMO_PASSWORD_HASH,
+    createdAt: '2026-09-01T00:00:00.000Z',
+  },
+];
