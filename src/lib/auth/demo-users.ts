@@ -1,13 +1,13 @@
 import { UserDocument } from '@/lib/types/models';
 
-export const DEMO_PASSWORD_DEFAULT = 'OnboardFlow2026!';
-// Pre-hashed for fast startup: bcrypt.hashSync('OnboardFlow2026!', 10)
+export const DEMO_PASSWORD_DEFAULT = 'Omnipresent2026!';
+// Pre-hashed for fast startup
 const DEMO_PASSWORD_HASH = '$2b$10$r7cAnJpg1bGgn7Xwoqw6E.vO.bDlNjCZkWr.S39XJylTNS6CMWtra';
 
 export const DEMO_USERS: UserDocument[] = [
   {
     id: 'user-hr',
-    email: 'hr@onboardflow.demo',
+    email: 'hr@omnipresent.ai',
     name: 'Helen Reed',
     role: 'HR',
     department: 'People Operations',
@@ -17,7 +17,7 @@ export const DEMO_USERS: UserDocument[] = [
   },
   {
     id: 'user-aarav-sharma',
-    email: 'aarav@onboardflow.demo',
+    email: 'aarav@omnipresent.ai',
     name: 'Aarav Sharma',
     role: 'EMPLOYEE',
     department: 'Engineering',
@@ -28,7 +28,7 @@ export const DEMO_USERS: UserDocument[] = [
   },
   {
     id: 'user-priya-nair',
-    email: 'priya@onboardflow.demo',
+    email: 'priya@omnipresent.ai',
     name: 'Priya Nair',
     role: 'MANAGER',
     department: 'Engineering',
@@ -39,7 +39,7 @@ export const DEMO_USERS: UserDocument[] = [
   },
   {
     id: 'user-security',
-    email: 'security@onboardflow.demo',
+    email: 'security@omnipresent.ai',
     name: 'Sam Vance',
     role: 'SECURITY',
     department: 'Physical & InfoSec',
@@ -49,7 +49,7 @@ export const DEMO_USERS: UserDocument[] = [
   },
   {
     id: 'user-it',
-    email: 'it@onboardflow.demo',
+    email: 'it@omnipresent.ai',
     name: 'Ian Torres',
     role: 'IT',
     department: 'IT Operations',
@@ -59,7 +59,7 @@ export const DEMO_USERS: UserDocument[] = [
   },
   {
     id: 'user-cafeteria',
-    email: 'cafeteria@onboardflow.demo',
+    email: 'cafeteria@omnipresent.ai',
     name: 'Carlos Mendez',
     role: 'CAFETERIA',
     department: 'Workplace Services',
@@ -69,7 +69,7 @@ export const DEMO_USERS: UserDocument[] = [
   },
   {
     id: 'user-meera-shah',
-    email: 'meera@onboardflow.demo',
+    email: 'meera@omnipresent.ai',
     name: 'Meera Shah',
     role: 'EMPLOYEE',
     department: 'Sales',

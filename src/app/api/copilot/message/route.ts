@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       result,
+      ...result,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Copilot query failed.';

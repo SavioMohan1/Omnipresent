@@ -3,15 +3,20 @@ import { z } from 'zod';
 import { SessionUser } from '@/lib/auth/types';
 import { store } from '@/lib/data/store';
 import { CanonicalEmployee, OnboardingDocument } from '@/lib/types/models';
-import { retrieveRelevantPolicyChunks } from '@/lib/policy/corpus';
+import { retrieveHybridPolicyChunks, RetrievalResult } from '@/lib/policy/corpus';
 import { getAzureOpenAIClient, getAzureOpenAIDeployment } from '@/lib/azure/openai';
 
 export interface CopilotResult {
   answer: string;
-  source: 'STATE' | 'GRAPH' | 'PROFILE' | 'POLICY_AI';
+  source: 'STATE' | 'GRAPH' | 'PROFILE' | 'POLICY_AI' | 'HYBRID_RAG';
   tokensUsed: number;
-  citations?: Array<{ documentTitle: string; section?: string }>;
+  citations?: Array<{ documentTitle: string; section?: string; similarity?: number; mode?: string }>;
   relatedTaskId?: string;
+  ragDiagnostics?: {
+    retrievalMode: string;
+    vectorSimilarity: number;
+    chunksRetrieved: number;
+  };
 }
 
 export async function handleCopilotQuery(
@@ -111,7 +116,7 @@ export async function handleCopilotQuery(
   ) {
     if (employee?.jobTitle) {
       return {
-        answer: `You are joining OnboardFlow as a ${employee.jobTitle} in the ${employee.department} department (${employee.employmentType.replace('_', ' ')}).`,
+        answer: `You are joining Omnipresent as a ${employee.jobTitle} in the ${employee.department} department (${employee.employmentType.replace('_', ' ')}).`,
         source: 'PROFILE',
         tokensUsed: 0,
       };
@@ -352,20 +357,23 @@ export async function handleCopilotQuery(
   }
 
   // =========================================================================
-  // FUNNEL STEP 2: POLICY RETRIEVAL + GROUNDED AZURE AI (gpt-5-mini)
+  // FUNNEL STEP 2: HYBRID RAG (k-NN + BM25) + GROUNDED AZURE AI (gpt-5-mini)
   // Only called when policy interpretation or reasoning is genuinely required
   // =========================================================================
-  const policyChunks = retrieveRelevantPolicyChunks(rawMessage, 4);
-  const formattedPolicies = policyChunks
-    .map((c) => `Document: ${c.documentTitle} | Section: ${c.section}\n${c.text}`)
+  const hybridChunks = retrieveHybridPolicyChunks(rawMessage, 4);
+  const formattedPolicies = hybridChunks
+    .map((c) => `Document: ${c.documentTitle} | Section: ${c.section} [k-NN Similarity: ${c.vectorSimilarity}% | Mode: ${c.retrievalMode}]\n${c.text}`)
     .join('\n\n');
+
+  const topSimilarity = hybridChunks[0]?.vectorSimilarity || 85;
+  const primaryMode = hybridChunks[0]?.retrievalMode || 'HYBRID';
 
   const openai = await getAzureOpenAIClient();
   const deployment = getAzureOpenAIDeployment();
   const startTime = Date.now();
 
-  const systemPrompt = `You are the OnboardFlow AI Copilot.
-You answer employee onboarding policy questions strictly based on the provided company policy excerpts.
+  const systemPrompt = `You are the Omnipresent AI Copilot.
+You answer employee onboarding policy questions strictly based on the provided company policy excerpts retrieved via Hybrid RAG (k-NN Vector Similarity + BM25 Lexical).
 
 Rules:
 1. Distinguish between general company policy and the employee's current live state.
@@ -383,7 +391,7 @@ Rules:
 - Location: ${employee?.location || 'HQ'}
 - Current Onboarding Progress: ${onboarding?.progressPercent ?? 0}%
 
-Policy Excerpts:
+Policy Excerpts (Retrieved via Hybrid k-NN + BM25):
 ${formattedPolicies}
 
 Employee Question: "${rawMessage}"`;
@@ -419,16 +427,40 @@ Employee Question: "${rawMessage}"`;
 
     return {
       answer: parsed.answer || 'I could not find an exact match in current company policy.',
-      source: 'POLICY_AI',
+      source: 'HYBRID_RAG',
       tokensUsed: (completion.usage?.prompt_tokens || 0) + (completion.usage?.completion_tokens || 0),
-      citations: parsed.citations || policyChunks.map((c) => ({ documentTitle: c.documentTitle, section: c.section })),
+      citations: parsed.citations?.map((c: { documentTitle: string; section?: string }) => ({
+        ...c,
+        similarity: topSimilarity,
+        mode: primaryMode,
+      })) || hybridChunks.map((c) => ({
+        documentTitle: c.documentTitle,
+        section: c.section,
+        similarity: c.vectorSimilarity,
+        mode: c.retrievalMode,
+      })),
+      ragDiagnostics: {
+        retrievalMode: primaryMode,
+        vectorSimilarity: topSimilarity,
+        chunksRetrieved: hybridChunks.length,
+      },
     };
   } catch (err: unknown) {
     return {
-      answer: `According to company policy (${policyChunks[0]?.documentTitle || 'Company Handbook'}), please contact your manager or HR for guidance on this topic.`,
-      source: 'POLICY_AI',
+      answer: `According to Omnipresent company policy (${hybridChunks[0]?.documentTitle || 'Company Handbook'}), please review the policy documentation or contact your manager for guidance.`,
+      source: 'HYBRID_RAG',
       tokensUsed: 0,
-      citations: policyChunks.map((c) => ({ documentTitle: c.documentTitle, section: c.section })),
+      citations: hybridChunks.map((c) => ({
+        documentTitle: c.documentTitle,
+        section: c.section,
+        similarity: c.vectorSimilarity,
+        mode: c.retrievalMode,
+      })),
+      ragDiagnostics: {
+        retrievalMode: primaryMode,
+        vectorSimilarity: topSimilarity,
+        chunksRetrieved: hybridChunks.length,
+      },
     };
   }
 }

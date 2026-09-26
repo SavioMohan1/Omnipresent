@@ -92,10 +92,20 @@ class MemoryStore {
     return this.users.get(id) || null;
   }
 
-  public async getUserByEmail(email: string): Promise<UserDocument | null> {
-    const normalized = email.toLowerCase().trim();
+  public async getUserByEmail(identifier: string): Promise<UserDocument | null> {
+    const normalized = identifier.toLowerCase().trim();
+    const prefix = normalized.split('@')[0];
     for (const user of this.users.values()) {
-      if (user.email.toLowerCase() === normalized) {
+      const userPrefix = user.email.split('@')[0].toLowerCase();
+      if (
+        user.email.toLowerCase() === normalized ||
+        user.id.toLowerCase() === normalized ||
+        user.id.replace('user-', '').toLowerCase() === normalized ||
+        user.role.toLowerCase() === normalized ||
+        user.name.toLowerCase().includes(normalized) ||
+        userPrefix === prefix ||
+        userPrefix === normalized
+      ) {
         return user;
       }
     }

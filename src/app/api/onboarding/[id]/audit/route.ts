@@ -29,6 +29,7 @@ export async function GET(
       success: true,
       onboardingId: onboarding.id,
       events,
+      auditEvents: events,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to retrieve audit events.';
